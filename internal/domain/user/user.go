@@ -2,13 +2,14 @@ package userDomain
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
-	ID       uint   `json:"id" gorm:"primarykey"`
-	UserName string `json:"user_name"`
-	PassWord string `json:"pass_word"`
-	IsActive bool   `json:"is_active"`
+	ID       primitive.ObjectID `bson:"_id,omitempty"`
+	UserName string             `json:"user_name"`
+	PassWord string             `json:"pass_word"`
+	IsActive bool               `json:"is_active"`
 }
 
 type CreateUserForm struct {
@@ -20,6 +21,11 @@ type ReadUserForm struct {
 	Context  context.Context
 	UserName string
 	PassWord string
+}
+
+type ReadID struct {
+	Context context.Context
+	ID      primitive.ObjectID
 }
 
 type UserForm struct {
@@ -70,6 +76,7 @@ type UserReadForm struct {
 type UserRepository interface {
 	Create(form CreateUserForm) error
 	Read(form ReadUserForm) (User, error)
+	ReadID(form ReadID) (User, error)
 	Update(user User) error
 	Delete(user User) error
 }

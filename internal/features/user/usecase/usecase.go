@@ -22,7 +22,8 @@ func (a *Usecase) Create(form userDomain.CreateUserForm) (userDomain.UserRespons
 		UserName: form.User.UserName,
 		Context:  form.Context,
 	}
-	if res, _ := a.UserRepo.Read(readForm); res.UserName != "" {
+	res, _ := a.UserRepo.Read(readForm)
+	if res.UserName != "" {
 		return userDomain.UserResponse{}, errors.New("this username is taken")
 	}
 
@@ -51,15 +52,11 @@ func (a *Usecase) SignIn(form userDomain.LoginForm) (userDomain.UserResponse, er
 		return userDomain.UserResponse{}, err
 	}
 
-	if user.UserName == "" {
-		return userDomain.UserResponse{}, errors.New("this username doesn't exist. ")
-	}
-
 	if form.Password != user.PassWord {
 		return userDomain.UserResponse{}, errors.New("wrong password")
 	}
 
-	jwtsig, errs := jwt.GenerateToken(user)
+	jwtsig, errs := jwt.GenerateTokenUser(user)
 	if errs != nil {
 		return userDomain.UserResponse{}, errs
 	}

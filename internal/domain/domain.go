@@ -3,6 +3,7 @@ package domain
 import (
 	"chat/internal/domain/pubSub"
 	"chat/internal/domain/user"
+	"chat/internal/mq/nats"
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -15,6 +16,7 @@ type UseCases struct {
 type Repositories struct {
 	User userDomain.UserRepository
 	Chat chatDomain.ChatRepository
+	Mq   nats.Client
 }
 
 type Config struct {

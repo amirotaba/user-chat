@@ -3,7 +3,6 @@ package nats
 import (
 	"fmt"
 	"github.com/nats-io/nats.go"
-	"runtime"
 )
 
 type Client struct {
@@ -24,13 +23,11 @@ func (c *Client) Sub() string {
 	c.cn.Subscribe("gen", func(msg *nats.Msg) {
 		out = string(msg.Data)
 	})
-
-	runtime.Goexit()
 	return out
 }
 
-func (c *Client) Pub(message []byte) error {
-	err := c.cn.Publish("foo", message)
+func (c *Client) Pub(message string) error {
+	err := c.cn.Publish("foo", []byte(message))
 	if err != nil {
 		return err
 	}

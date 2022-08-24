@@ -6,26 +6,29 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type mysqlUserRepository struct {
-	Clc *mongo.Collection
+type mongoRepository struct {
+	Collection *mongo.Collection
 }
 
-func NewMysqlRepository(cnf *mongo.Collection) chatDomain.ChatRepository {
-	return &mysqlUserRepository{
-		Clc: cnf,
+func NewMysqlRepository(clc *mongo.Collection) chatDomain.ChatRepository {
+	return &mongoRepository{
+		Collection: clc,
 	}
 }
 
-func (m *mysqlUserRepository) Create(form chatDomain.CreateForm) error {
-	_, err := m.Clc.InsertOne(form.Context, form.Message)
+func (m *mongoRepository) NewChat(form chatDomain.CreateChat) error {
+	_, err := m.Collection.InsertOne(form.Context, form.Chat)
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (m *mysqlUserRepository) Read(form chatDomain.ReadForm) ([]chatDomain.Message, error) {
-	cur, err := m.Clc.Find(form.Context, bson.D{})
+func (m *mongoRepository) ReadChat(form chatDomain.ReadChat) ([]chatDomain.Message, error) {
+	filter := bson.D{{"chatid", form.ID}}
+	cur, err := m.Collection.Find(form.Context, filter)
 
 	if err != nil {
 		return nil, err
@@ -33,17 +36,17 @@ func (m *mysqlUserRepository) Read(form chatDomain.ReadForm) ([]chatDomain.Messa
 
 	defer cur.Close(form.Context)
 
-	var products []chatDomain.Message
+	var messages []chatDomain.Message
 
 	for cur.Next(form.Context) {
 
-		var product chatDomain.Message
+		var message chatDomain.Message
 
-		if err = cur.Decode(&product); err != nil {
+		if err = cur.Decode(&message); err != nil {
 			return nil, err
 		}
 
-		products = append(products, product)
+		messages = append(messages, message)
 
 	}
 
@@ -53,5 +56,15 @@ func (m *mysqlUserRepository) Read(form chatDomain.ReadForm) ([]chatDomain.Messa
 	//	UserName: products[0].UserName,
 	//}
 
-	return products, nil
+	return messages, nil
+}
+
+func (m *mongoRepository) CreateMessage(form chatDomain.CreateMessage) error {
+	_, err := m.Collection.InsertOne(form.Context, form.Message)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

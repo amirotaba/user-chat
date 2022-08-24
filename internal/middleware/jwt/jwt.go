@@ -2,6 +2,7 @@ package jwt
 
 import (
 	userDomain "chat/internal/domain/user"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -10,8 +11,7 @@ import (
 )
 
 type jwtCustomClaims struct {
-	UID      uint   `json:"uid"`
-	UserName string `json:"user_name"`
+	UID primitive.ObjectID `json:"uid"`
 	jwt.StandardClaims
 }
 
@@ -22,10 +22,9 @@ var Config = middleware.JWTConfig{
 	SigningKey: signingKey,
 }
 
-func GenerateToken(user userDomain.User) (string, error) {
+func GenerateTokenUser(user userDomain.User) (string, error) {
 	claims := &jwtCustomClaims{
 		user.ID,
-		user.UserName,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
@@ -38,7 +37,7 @@ func GenerateToken(user userDomain.User) (string, error) {
 	return t, nil
 }
 
-func UserID(c echo.Context) uint {
+func UserID(c echo.Context) primitive.ObjectID {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwtCustomClaims)
 	uid := claims.UID
